@@ -8,8 +8,35 @@ import wave
 import webrtcvad
 from halo import Halo
 from scipy import signal
+import requests
+import queue # import the queue
+from playsound import playsound
+from dotenv import load_dotenv
 
 logging.basicConfig(level=20)
+
+load_dotenv()
+
+# TEXT TO SPEECH SETUP -------------------------------------------------------------------------------------------------
+
+# Define constants for the script
+CHUNK_SIZE = 1024  # Size of chunks to read/write at a time
+XI_API_KEY = os.getenv('ELEVEN_LABS_KEY')  # Your API key for authentication
+VOICE_ID = "VkRQXxkfeZ8MQzwDOLue"  # ID of the voice model to use
+TEXT_TO_SPEAK = "You're such a good boy"  # Text you want to convert to speech
+OUTPUT_PATH = "./audio/output.mp3"  # Path to save the output audio file
+
+# Construct the URL for the Text-to-Speech API request
+tts_url = f"https://api.elevenlabs.io/v1/text-to-speech/{VOICE_ID}/stream"
+
+# Set up headers for the API request, including the API key for authentication
+headers = {
+    "Accept": "application/json",
+    "xi-api-key": XI_API_KEY
+}
+
+# Declare queue for receiving messages
+phrases = queue.Queue()
 
 class Audio(object):
     """Streams raw audio from microphone. Data is received in a separate thread, and stored in a buffer, to be read from."""
@@ -194,6 +221,93 @@ def main(ARGS):
             text = stream_context.finishStream()
             print("Recognized: %s" % text)
             stream_context = model.createStream()
+            # add to queue
+            phrases.put(text)
+
+# Kobold AI ---------------------------------------------------------------------------------------------------------------------------
+user = "Kyle:"
+bot = "Pluto:" # i want to add chan so bad
+ENDPOINT = "http://127.0.0.1:5000"
+conversation_history = [] # using a list to update conversation history is more memory efficient than constantly updating a string
+
+def get_prompt(user_msg):
+    return {
+        "prompt": f"{user_msg}",
+        "use_story": False, #Needs to be set in KoboldAI webUI
+        "use_memory": False, #Needs to be set in KoboldAI webUI
+        "use_authors_note": False, #Needs to be set in KoboldAI webUI
+        "use_world_info": False, #Needs to be set in KoboldAI webUI
+        "max_context_length": 2048,
+        "max_length": 120,
+        "rep_pen": 1.0,
+        "rep_pen_range": 2048,
+        "rep_pen_slope": 0.7,
+        "temperature": 0.7,
+        "tfs": 0.97,
+        "top_a": 0.8,
+        "top_k": 0,
+        "top_p": 0.5,
+        "typical": 0.19,
+        "sampler_order": [6,0,1,3,4,2,5], 
+        "singleline": False,
+        "sampler_seed": 69420, # Use specific seed for text generation?
+        "sampler_full_determinism": False, # Always give same output with same settings?
+        "frmttriminc": False, #Trim incomplete sentences
+        "frmtrmblln": False, #Remove blank lines
+        "stop_sequence": ["\n\n\n\n\n", f"{user}"]
+        }
+
+def generateMessage(prompt):
+    # Set up the data payload for the API request, including the text and voice settings
+    data = {
+        "text": prompt,
+        "model_id": "eleven_multilingual_v2",
+        "voice_settings": {
+            "stability": 0.5,
+            "similarity_boost": 0.8,
+            "style": 0.0, # change these parameters cause i want teh sauce, the juicy leaking out n shit
+            "use_speaker_boost": True
+        }
+    }
+
+    # Make the POST request to the TTS API with headers and data, enabling streaming response
+    response = requests.post(tts_url, headers=headers, json=data, stream=True)
+
+    # Check if the request was successful
+    if response.ok:
+        # Open the output file in write-binary mode
+        with open(OUTPUT_PATH, "wb") as f:
+            # Read the response in chunks and write to the file
+            for chunk in response.iter_content(chunk_size=CHUNK_SIZE):
+                f.write(chunk)
+        # Inform the user of success
+        print("Audio stream saved successfully.")
+        playsound(OUTPUT_PATH)
+
+# Read recognized text from the queue and process it
+def process_recognized_text():
+    while True:
+        # try:
+        if(phrases.empty() == False):
+            recognized_text = phrases.get() # what does this timeout do???
+            # KoboldAI
+            try:
+                fullmsg = f"{conversation_history[-1] if conversation_history else ''}{user} {recognized_text}\n{bot} " # Add all of conversation history if it exists and add User and Bot names
+                prompt = get_prompt(fullmsg) # Process prompt into KoboldAI API format
+                response = requests.post(f"{ENDPOINT}/api/v1/generate", json=prompt) # Send prompt to API
+
+                if response.status_code == 200:
+                    results = response.json()['results'] # Set results as JSON response
+                    text = results[0]['text'] # inside results, look in first group for section labeled 'text'
+                    response_text = text.split('\n')[0].replace("  ", " ") # Optional, keep only the text before a new line, and replace double spaces with normal ones
+                    conversation_history.append(f"{fullmsg}{response_text}\n") # Add the response to the end of your conversation history
+                generateMessage(response_text)
+                print(f"{bot} {response_text}")
+
+            except Exception as e:
+                print(f"An error occurred: {e}")
+
+
 
 if __name__ == '__main__':
     DEFAULT_SAMPLE_RATE = 16000
@@ -221,4 +335,11 @@ if __name__ == '__main__':
 
     ARGS = parser.parse_args()
     if ARGS.savewav: os.makedirs(ARGS.savewav, exist_ok=True)
-    main(ARGS)
+
+    inputThread = threading.Thread(target=main, args=(ARGS,))
+    processThread = threading.Thread(target=process_recognized_text)
+
+    inputThread.start()
+    processThread.start()
+
+    # main(ARGS)

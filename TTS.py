@@ -4,6 +4,9 @@ import requests
 import json
 import os
 
+# play sound
+from playsound import playsound
+
 # .env
 from dotenv import load_dotenv
 load_dotenv()
@@ -12,7 +15,7 @@ load_dotenv()
 CHUNK_SIZE = 1024  # Size of chunks to read/write at a time
 XI_API_KEY = os.getenv('ELEVEN_LABS_KEY')  # Your API key for authentication
 VOICE_ID = "VkRQXxkfeZ8MQzwDOLue"  # ID of the voice model to use
-TEXT_TO_SPEAK = "I need you in my life"  # Text you want to convert to speech
+TEXT_TO_SPEAK = "You're such a good boy"  # Text you want to convert to speech
 OUTPUT_PATH = "./audio/output.mp3"  # Path to save the output audio file
 
 # Construct the URL for the Text-to-Speech API request
@@ -48,6 +51,8 @@ if response.ok:
             f.write(chunk)
     # Inform the user of success
     print("Audio stream saved successfully.")
+    playsound(OUTPUT_PATH)
+
 else:
     # Print the error message if the request was not successful
     print(response.text)
