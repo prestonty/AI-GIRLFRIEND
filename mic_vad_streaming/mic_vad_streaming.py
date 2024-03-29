@@ -25,6 +25,9 @@ XI_API_KEY = os.getenv('ELEVEN_LABS_KEY')  # Your API key for authentication
 VOICE_ID = "VkRQXxkfeZ8MQzwDOLue"  # ID of the voice model to use
 TEXT_TO_SPEAK = "You're such a good boy"  # Text you want to convert to speech
 OUTPUT_PATH = "./audio/output.mp3"  # Path to save the output audio file
+if os.path.exists(OUTPUT_PATH):
+    os.remove(OUTPUT_PATH)
+os.makedirs(OUTPUT_PATH, exist_ok=True)
 
 # Construct the URL for the Text-to-Speech API request
 tts_url = f"https://api.elevenlabs.io/v1/text-to-speech/{VOICE_ID}/stream"
@@ -227,7 +230,7 @@ def main(ARGS):
 # Kobold AI ---------------------------------------------------------------------------------------------------------------------------
 user = "Kyle:"
 bot = "Pluto:" # i want to add chan so bad
-ENDPOINT = "http://127.0.0.1:5000"
+ENDPOINT = "https://sims-chinese-colombia-door.trycloudflare.com/api" # you need to replace this with the correct one from the Google Colab
 conversation_history = [] # using a list to update conversation history is more memory efficient than constantly updating a string
 
 def get_prompt(user_msg):
@@ -265,10 +268,14 @@ def generateMessage(prompt):
         "voice_settings": {
             "stability": 0.5,
             "similarity_boost": 0.8,
-            "style": 0.0, # change these parameters cause i want teh sauce, the juicy leaking out n shit
+            "style": 0.0, # change these parameters as needed
             "use_speaker_boost": True
         }
     }
+
+    # MAKE SURE TO DELETE THE PREVIOUS output.mp3 before creating the new one or else it generates an error
+    if os.path.exists(OUTPUT_PATH):
+        os.remove(OUTPUT_PATH)
 
     # Make the POST request to the TTS API with headers and data, enabling streaming response
     response = requests.post(tts_url, headers=headers, json=data, stream=True)
@@ -291,6 +298,7 @@ def process_recognized_text():
         if(phrases.empty() == False):
             recognized_text = phrases.get() # what does this timeout do???
             # KoboldAI
+            response_text = "Default value" # this should never be the actual value but I need this to prevent errors with the "try" keyword
             try:
                 fullmsg = f"{conversation_history[-1] if conversation_history else ''}{user} {recognized_text}\n{bot} " # Add all of conversation history if it exists and add User and Bot names
                 prompt = get_prompt(fullmsg) # Process prompt into KoboldAI API format
