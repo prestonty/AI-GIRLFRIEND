@@ -13,6 +13,9 @@ import queue # import the queue
 from playsound import playsound
 from dotenv import load_dotenv
 
+# from pydub import AudioSegment
+# from pydub.playback import play
+
 logging.basicConfig(level=20)
 
 load_dotenv()
@@ -23,11 +26,15 @@ load_dotenv()
 CHUNK_SIZE = 1024  # Size of chunks to read/write at a time
 XI_API_KEY = os.getenv('ELEVEN_LABS_KEY')  # Your API key for authentication
 VOICE_ID = "VkRQXxkfeZ8MQzwDOLue"  # ID of the voice model to use
-TEXT_TO_SPEAK = "You're such a good boy"  # Text you want to convert to speech
+# TEXT_TO_SPEAK = "You're such a good boy"  # Text you want to convert to speech
 OUTPUT_PATH = "./audio/output.mp3"  # Path to save the output audio file
+# os.makedirs(OUTPUT_PATH, exist_ok=True)
+# permissions = 0o777 # set permissions
+
 if os.path.exists(OUTPUT_PATH):
+    # If the file exists, delete it
     os.remove(OUTPUT_PATH)
-os.makedirs(OUTPUT_PATH, exist_ok=True)
+    print(f"Deleted existing file: {OUTPUT_PATH}")
 
 # Construct the URL for the Text-to-Speech API request
 tts_url = f"https://api.elevenlabs.io/v1/text-to-speech/{VOICE_ID}/stream"
@@ -40,6 +47,8 @@ headers = {
 
 # Declare queue for receiving messages
 phrases = queue.Queue()
+# declare queue for merging messages
+sentences = queue.Queue()
 
 class Audio(object):
     """Streams raw audio from microphone. Data is received in a separate thread, and stored in a buffer, to be read from."""
@@ -224,41 +233,36 @@ def main(ARGS):
             text = stream_context.finishStream()
             print("Recognized: %s" % text)
             stream_context = model.createStream()
-            # add to queue
-            phrases.put(text)
+
+            # FILTERING --------------------------------------------------------------------------------------------------------------- 
+            # ONLY add to the queue if it is not a blank or not a yes
+            if(len(text) > 5 or text.lower() == "yes" or text.lower() == "no"):
+                phrases.put(text)
+                print("added to raw input queue")
 
 # Kobold AI ---------------------------------------------------------------------------------------------------------------------------
 user = "Kyle:"
-bot = "Pluto:" # i want to add chan so bad
-ENDPOINT = "https://sims-chinese-colombia-door.trycloudflare.com/api" # you need to replace this with the correct one from the Google Colab
+bot = "Pluto:" # i want to add chan so bad but the bot cant tell the difference between "pluto" and "pluto-chan" (thinks different people)
+# DO NOT INCLUDE /api just the link!!!
+ENDPOINT = "https://cell-mostly-signals-blonde.trycloudflare.com" # you need to replace this with the correct one from the Google Colab. Dont include /api (E.g. https://cell-mostly-signals-blonde.trycloudflare.com)
 conversation_history = [] # using a list to update conversation history is more memory efficient than constantly updating a string
 
 def get_prompt(user_msg):
     return {
-        "prompt": f"{user_msg}",
-        "use_story": False, #Needs to be set in KoboldAI webUI
-        "use_memory": False, #Needs to be set in KoboldAI webUI
-        "use_authors_note": False, #Needs to be set in KoboldAI webUI
-        "use_world_info": False, #Needs to be set in KoboldAI webUI
         "max_context_length": 2048,
-        "max_length": 120,
-        "rep_pen": 1.0,
+        "max_length": 100,
+        "prompt": user_msg,
+        "quiet": False,
+        "rep_pen": 1.1,
         "rep_pen_range": 2048,
-        "rep_pen_slope": 0.7,
-        "temperature": 0.7,
-        "tfs": 0.97,
-        "top_a": 0.8,
+        "rep_pen_slope": 1,
+        "temperature": 0.5,
+        "tfs": 1,
+        "top_a": 0,
         "top_k": 0,
-        "top_p": 0.5,
-        "typical": 0.19,
-        "sampler_order": [6,0,1,3,4,2,5], 
-        "singleline": False,
-        "sampler_seed": 69420, # Use specific seed for text generation?
-        "sampler_full_determinism": False, # Always give same output with same settings?
-        "frmttriminc": False, #Trim incomplete sentences
-        "frmtrmblln": False, #Remove blank lines
-        "stop_sequence": ["\n\n\n\n\n", f"{user}"]
-        }
+        "top_p": 0.9,
+        "typical": 1
+    }
 
 def generateMessage(prompt):
     # Set up the data payload for the API request, including the text and voice settings
@@ -273,21 +277,20 @@ def generateMessage(prompt):
         }
     }
 
-    # MAKE SURE TO DELETE THE PREVIOUS output.mp3 before creating the new one or else it generates an error
+    # MAKE SURE TO DELETE THE PREVIOUS output.mp3 before creating the new one or else it generates an error (IT WORKS NOW)
     if os.path.exists(OUTPUT_PATH):
         os.remove(OUTPUT_PATH)
+        print(f"Deleted existing file: {OUTPUT_PATH}")
 
     # Make the POST request to the TTS API with headers and data, enabling streaming response
     response = requests.post(tts_url, headers=headers, json=data, stream=True)
 
     # Check if the request was successful
     if response.ok:
-        # Open the output file in write-binary mode
         with open(OUTPUT_PATH, "wb") as f:
             # Read the response in chunks and write to the file
             for chunk in response.iter_content(chunk_size=CHUNK_SIZE):
                 f.write(chunk)
-        # Inform the user of success
         print("Audio stream saved successfully.")
         playsound(OUTPUT_PATH)
 
@@ -298,7 +301,7 @@ def process_recognized_text():
         if(phrases.empty() == False):
             recognized_text = phrases.get() # what does this timeout do???
             # KoboldAI
-            response_text = "Default value" # this should never be the actual value but I need this to prevent errors with the "try" keyword
+            response_text = "hi" # this should never be the actual value but I need this to prevent errors with the "try" keyword
             try:
                 fullmsg = f"{conversation_history[-1] if conversation_history else ''}{user} {recognized_text}\n{bot} " # Add all of conversation history if it exists and add User and Bot names
                 prompt = get_prompt(fullmsg) # Process prompt into KoboldAI API format
@@ -309,6 +312,8 @@ def process_recognized_text():
                     text = results[0]['text'] # inside results, look in first group for section labeled 'text'
                     response_text = text.split('\n')[0].replace("  ", " ") # Optional, keep only the text before a new line, and replace double spaces with normal ones
                     conversation_history.append(f"{fullmsg}{response_text}\n") # Add the response to the end of your conversation history
+                else:
+                    print("Response from Kobold failed")
                 generateMessage(response_text)
                 print(f"{bot} {response_text}")
 

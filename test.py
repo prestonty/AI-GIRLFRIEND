@@ -1,7 +1,46 @@
-from playsound import playsound
+import requests
+import os
+import audioread
+import numpy as np
+import sounddevice as sd
 
-OUTPUT_PATH = "./audio/Goodboy.mp3"  # Path to save the output audio file
+VOICE_ID = "VkRQXxkfeZ8MQzwDOLue"  # ID of the voice model to use
+tts_url = f"https://api.elevenlabs.io/v1/text-to-speech/{VOICE_ID}/stream"
+XI_API_KEY = os.getenv('ELEVEN_LABS_KEY')  # Your API key for authentication
+CHUNK_SIZE = 1024  # Size of chunks to read/write at a time
 
-playsound(OUTPUT_PATH)
+headers = {
+    "Accept": "application/json",
+    "xi-api-key": XI_API_KEY
+}
 
-# playsound only works for this version (pip install playsound==1.2.2)
+data = {
+    "text": "hi",
+    "model_id": "eleven_multilingual_v2",
+    "voice_settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.8,
+        "style": 0.0,  # change these parameters as needed
+        "use_speaker_boost": True
+    }
+}
+
+response = requests.post(tts_url, headers=headers, json=data, stream=True)
+
+# Define a callback function to handle audio playback
+def audio_callback(outdata, frames, time, status):
+    global audio_data
+    # Read audio data from the streaming response
+    chunk = response.raw.read(CHUNK_SIZE)
+    if len(chunk) == 0:
+        print("End of audio stream")
+        raise sd.CallbackAbort
+    audio_data = np.frombuffer(chunk, dtype=np.int16).reshape((-1, 2))
+    outdata[:] = audio_data
+
+# Open a stream for audio playback
+with sd.OutputStream(channels=2, callback=audio_callback):
+    print("Playing audio...")
+    # Keep the script running while audio is being played
+    while True:
+        pass

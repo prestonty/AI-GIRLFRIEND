@@ -16,7 +16,7 @@ def run_mic_vad_streaming():
     except subprocess.CalledProcessError as e:
         print("Error:", e)
     except FileNotFoundError:
-        print("Error: mic_vad_streaming.py script not found")
+        print("Error: /mic_vad_streaming/mic_vad_streaming.py script not found")
 
 if __name__ == "__main__":
     run_mic_vad_streaming()
