@@ -1,3 +1,5 @@
+# This is for testing the eleven labs API
+
 import requests
 import os
 import audioread
@@ -15,7 +17,7 @@ headers = {
 }
 
 data = {
-    "text": "hi",
+    "text": "hi", # Change the message here
     "model_id": "eleven_multilingual_v2",
     "voice_settings": {
         "stability": 0.5,
