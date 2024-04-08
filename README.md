@@ -1,3 +1,8 @@
+# Install Dependencies
+```console
+pip install -r requirements.txt
+```
+
 # Run KoboldAI on Google Colab
 Can't pay for expensive servers so the AI is executed on [Google Colab](https://colab.research.google.com/github/koboldai/KoboldAI-Client/blob/main/colab/GPU.ipynb#scrollTo=lVftocpwCoYw)
 <br />
@@ -9,7 +14,9 @@ Paste the generated link into the ENDPOINT variable located in mic_vad_streaming
 The link will look like https://crude-nevertheless-seconds-experts.trycloudflare.com/
 
 # Run the program
+```console
 python main.py
+```
 
 # TODO list:
 1. Keep a transcript of all the things the AI said
