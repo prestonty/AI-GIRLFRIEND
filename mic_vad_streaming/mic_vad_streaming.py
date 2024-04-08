@@ -244,7 +244,7 @@ def main(ARGS):
 user = "Kyle:"
 bot = "Pluto:" # i want to add chan so bad but the bot cant tell the difference between "pluto" and "pluto-chan" (thinks different people)
 # DO NOT INCLUDE /api just the link!!!
-ENDPOINT = "https://cell-mostly-signals-blonde.trycloudflare.com" # you need to replace this with the correct one from the Google Colab. Dont include /api (E.g. https://cell-mostly-signals-blonde.trycloudflare.com)
+ENDPOINT = "https://crude-nevertheless-seconds-experts.trycloudflare.com/" # you need to replace this with the correct one from the Google Colab. Dont include /api (E.g. https://cell-mostly-signals-blonde.trycloudflare.com)
 conversation_history = [] # using a list to update conversation history is more memory efficient than constantly updating a string
 
 def get_prompt(user_msg):
@@ -319,8 +319,6 @@ def process_recognized_text():
 
             except Exception as e:
                 print(f"An error occurred: {e}")
-
-
 
 if __name__ == '__main__':
     DEFAULT_SAMPLE_RATE = 16000
