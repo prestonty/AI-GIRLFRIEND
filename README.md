@@ -1,9 +1,11 @@
 # Run KoboldAI on Google Colab
-Can't pay for expensive servers so the AI is executed on [Google Colab](https://colab.research.google.com/github/koboldai/KoboldAI-Client/blob/main/colab/GPU.ipynb#scrollTo=lVftocpwCoYw)__
+Can't pay for expensive servers so the AI is executed on [Google Colab](https://colab.research.google.com/github/koboldai/KoboldAI-Client/blob/main/colab/GPU.ipynb#scrollTo=lVftocpwCoYw)
+<br />
 Use "Echidna 13B (United)" (WARNING - slightly unfiltered...)
 
 # Paste the link from the WEB GUI
-Paste the generated link into the ENDPOINT variable located in mic_vad_streaming.py__
+Paste the generated link into the ENDPOINT variable located in mic_vad_streaming.py
+<br />
 The link will look like https://crude-nevertheless-seconds-experts.trycloudflare.com/
 
 # Run the program
