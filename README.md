@@ -1,3 +1,9 @@
+# Create virtual environment and activate it
+```console
+python -m venv .venv
+.venv/Scripts/activate
+```
+
 # Install Dependencies
 ```console
 pip install -r requirements.txt
