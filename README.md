@@ -26,7 +26,7 @@ python main.py
 
 # TODO list:
 1. Keep a transcript of all the things the AI said
-2. Have a filter mode (another program will decide if what the AI is about to say is appropriate). This is a a barrier from KoboldAI and "elevenlabs TTS"
-3. Convert the voice from TTS to kafka or someone else (who matches ig). make the tts voice compatible (have different versions). I want: dommy, loli, normal female news reporter type voice, male voice.
+2. Have a filter mode. This is a a barrier from KoboldAI and "elevenlabs TTS"
+3. Convert the voice from TTS to another voice
 4. Make an interface (Vtube studio??)
-5. Implement a deafen feature so the AI doesnt pick up your reactions to its input (I NEED THIS)
+5. Implement a deafen feature so the AI doesnt pick up your reactions to its input or miscellaneous noises (audio compression)
