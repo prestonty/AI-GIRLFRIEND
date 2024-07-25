@@ -34,4 +34,3 @@ python main.py
 2. Have a filter mode. This is a a barrier from KoboldAI and "elevenlabs TTS"
 3. Make an interface (Vtube studio??)
 4. Implement a deafen feature so the AI doesnt pick up your reactions to its input or miscellaneous noises (audio compression)
-5. 
