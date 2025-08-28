@@ -45,10 +45,10 @@ Wait ~10–25 minutes for the model to load.
 ### 🔗 Set the Web GUI Endpoint
 After the model loads, KoboldAI will give you a public URL like:
 
-# Example output URL from Colab
+#### Example output URL from Colab
 `https://crude-nevertheless-seconds-experts.trycloudflare.com/`
 
-# Paste this link into the ENDPOINT variable inside:
+#### Paste this link into the ENDPOINT variable inside:
 `mic_vad_streaming.py`
 
 ---
