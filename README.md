@@ -16,7 +16,7 @@ AI Girlfriend is an experimental project that lets you talk to a highly personal
 
 ## ⚙️ Setup Instructions
 
-### 1. Create Virtual Environment & Activate It
+#### 1. Create Virtual Environment & Activate It
 
 ```bash
 python -m venv .venv
@@ -25,12 +25,12 @@ python -m venv .venv
 # On Unix/MacOS
 source .venv/bin/activate
 ```
-2. Install Dependencies
+#### 2. Install Dependencies
 `pip install -r requirements.txt`
 
 ---
 
-☁️ Run KoboldAI on Google Colab
+### ☁️ Run KoboldAI on Google Colab
 Can't pay for expensive servers? Run the AI in your browser with free GPUs:
 
 🔗 Launch KoboldAI on Google Colab
@@ -42,7 +42,7 @@ Wait ~10–25 minutes for the model to load.
 
 ---
 
-🔗 Set the Web GUI Endpoint
+### 🔗 Set the Web GUI Endpoint
 After the model loads, KoboldAI will give you a public URL like:
 `https://crude-nevertheless-seconds-experts.trycloudflare.com/`
 Paste this link into the ENDPOINT variable inside:
@@ -50,7 +50,7 @@ Paste this link into the ENDPOINT variable inside:
 
 ---
 
-🔐 Add Your ElevenLabs API Key
+### 🔐 Add Your ElevenLabs API Key
 Create a file named .env in the root directory
 
 Add the following line (replace with your key):
@@ -59,12 +59,12 @@ Create an account at https://elevenlabs.io if you don’t have one.
 
 ---
 
-▶️ Run the Program
+### ▶️ Run the Program
 `python main.py`
 
 ---
 
-🧠 TODO List
+### 🧠 TODO List
  Keep a transcript of all the things the AI says
 
  Add a filter mode (prevents raw KoboldAI output from going directly into ElevenLabs)
