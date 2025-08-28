@@ -33,7 +33,7 @@ source .venv/bin/activate
 ### ☁️ Run KoboldAI on Google Colab
 Can't pay for expensive servers? Run the AI in your browser with free GPUs:
 
-🔗 Launch KoboldAI on Google Colab
+#### 🔗 Launch KoboldAI on Google Colab
 
 Select "Echidna 13B (United)"
 ⚠️ Slightly unfiltered — use with caution
@@ -44,9 +44,14 @@ Wait ~10–25 minutes for the model to load.
 
 ### 🔗 Set the Web GUI Endpoint
 After the model loads, KoboldAI will give you a public URL like:
-`https://crude-nevertheless-seconds-experts.trycloudflare.com/`
-Paste this link into the ENDPOINT variable inside:
-`mic_vad_streaming.py`
+
+```bash
+# Example output URL from Colab
+https://crude-nevertheless-seconds-experts.trycloudflare.com/
+
+# Paste this link into the ENDPOINT variable inside:
+mic_vad_streaming.py
+```
 
 ---
 
@@ -60,7 +65,9 @@ Create an account at https://elevenlabs.io if you don’t have one.
 ---
 
 ### ▶️ Run the Program
-`python main.py`
+```bash
+python main.py
+```
 
 ---
 
